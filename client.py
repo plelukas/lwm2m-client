@@ -4,16 +4,91 @@
 import asyncio
 import logging
 
-from aiocoap.resource import Site
+from enum import Enum
+
+import aiocoap
+from aiocoap.resource import Site, ObservableResource
 from aiocoap.protocol import Context
 from aiocoap.message import Message
 from aiocoap.numbers.codes import Code
 
 from model import ClientModel
+from encoder import JSONEncoder
 
 
 logging.basicConfig(level=logging.DEBUG, format="%(asctime)s [%(levelname)s] %(message)s")
 logger = logging.getLogger(__name__)
+
+
+class MediaType(Enum):
+    LINK = 40
+    TEXT = 1541
+    TLV = 1542
+    JSON = 1543
+    OPAQUE = 1544
+
+
+class RequestsHandler(ObservableResource):
+
+    def __init__(self, model):
+        super().__init__()
+        self.model = model
+        self.encoder = JSONEncoder(self.model)
+
+    # handle GET method (either observe or read) (request is a Message object)
+    @asyncio.coroutine
+    def render_get(self, request):
+        if request.opt.observe is not None:
+            logger.info("Requested observe at: {}".format(request.opt.uri_path))
+            return self.handle_observe(request.opt.uri_path)
+        else:
+            logger.info("Requested read at: {}".format(request.opt.uri_path))
+            return self.handle_read(request.opt.uri_path)
+
+    # handle PUT method (write)
+    @asyncio.coroutine
+    def render_put(self, request):
+        message_details = self.get_message_details(request)
+        logger.info("Requested write at: {} with payload: {}".format(message_details['path'], message_details['payload']))
+        return self.handle_write(message_details)
+
+    # handle POST method (execute)
+    @asyncio.coroutine
+    def render_post(self, request):
+        message_details = self.get_message_details(request)
+        logger.info("Requested execute at: {} with arguments: {}".format(message_details['path'], message_details['payload']))
+        return self.handle_execute(message_details)
+
+    def get_message_details(self, request):
+        return dict(path=request.opt.uri_path, payload=request.payload, format=request.opt.content_format)
+
+    def handle_read(self, path):
+        if len(path) == 2:
+            # result = Message(code=Code.CONTENT, payload='{"e": [{"n":"0","sv":"Open Mobile Alliance"},{"n":"1","sv":"Lightweight M2M Client"},{"n":"2","sv":"345000123"},{"n":"3","sv":"1.0"},{"n":"6/0","v":1},{"n":"6/1","v":5},{"n":"7/0","v":3800},{"n":"7/1","v":5000},{"n":"8/0","v":125},{"n":"8/1","v":900},{"n":"9","v":100},{"n":"10","v":15},{"n":"11/0","v":0},{"n":"13","v":1367491215},{"n":"14","sv":"+02:00"},{"n":"15","sv":"U"}]}'.encode())
+            result = Message(code=Code.CONTENT, payload=self.encoder.encode_read_instance(path))
+            # import json
+            # d1 = json.loads('{"e":[{"n":"0","sv":"Open Mobile Alliance"},{"n":"1","sv":"Lightweight M2M Client"},{"n":"2","sv":"345000123"},{"n":"3","sv":"1.0"},{"n":"6/0","v":1},{"n":"6/1","v":5},{"n":"7/0","v":3800},{"n":"7/1","v":5000},{"n":"8/0","v":125},{"n":"8/1","v":900},{"n":"9","v":100},{"n":"10","v":15},{"n":"11/0","v":0},{"n":"13","v":1367491215},{"n":"14","sv":"+02:00"},{"n":"15","sv":"U"}]}')
+            # d2 = sorted(self.encoder.encode_read_instance(path)["e"], key=lambda x: x["n"])
+            # import pprint
+            # pp = pprint.PrettyPrinter()
+            # pp.pprint(d1)
+            # pp.pprint(d2)
+            result.opt.content_format = MediaType.JSON.value
+        elif len(path) == 3:
+            result = Message(code=Code.CONTENT, payload=self.encoder.encode_read_resource(path))
+            result.opt.content_format = MediaType.JSON.value
+        else:
+            result = Message(code=Code.BAD_REQUEST)
+        return result
+
+    def handle_observe(self, path):
+        pass
+
+    def handle_write(self, message_details):
+        pass
+
+    def handle_execute(self, message_details):
+        pass
 
 
 class Client(Site):
@@ -22,6 +97,7 @@ class Client(Site):
     lifetime = 86400  # default
     binding = "UQ"  # binding mode
     model = None # model for objects and object instances
+    requests_handler = None
     location = None
     timewait = 27
 
@@ -30,6 +106,14 @@ class Client(Site):
         self.model = model
         self.server_name = server_name
         self.server_port = server_port
+
+        self.requests_handler = RequestsHandler(self.model)
+
+        # add observers
+        for iter_path in model.get_instances_iter_paths():
+            self.add_resource(iter_path, self.requests_handler)
+        for iter_path in model.get_resources_iter_paths():
+            self.add_resource(iter_path, self.requests_handler)
 
     @asyncio.coroutine
     def run(self):
@@ -103,3 +187,5 @@ if __name__ == '__main__':
         asyncio.wait_for(client.deregister(), 2000)
         loop.close()
         exit(0)
+
+

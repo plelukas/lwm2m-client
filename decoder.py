@@ -1,0 +1,4 @@
+
+
+class JSONDecoder:
+    pass
