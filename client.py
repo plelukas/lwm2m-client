@@ -64,15 +64,7 @@ class RequestsHandler(ObservableResource):
 
     def handle_read(self, path):
         if len(path) == 2:
-            # result = Message(code=Code.CONTENT, payload='{"e": [{"n":"0","sv":"Open Mobile Alliance"},{"n":"1","sv":"Lightweight M2M Client"},{"n":"2","sv":"345000123"},{"n":"3","sv":"1.0"},{"n":"6/0","v":1},{"n":"6/1","v":5},{"n":"7/0","v":3800},{"n":"7/1","v":5000},{"n":"8/0","v":125},{"n":"8/1","v":900},{"n":"9","v":100},{"n":"10","v":15},{"n":"11/0","v":0},{"n":"13","v":1367491215},{"n":"14","sv":"+02:00"},{"n":"15","sv":"U"}]}'.encode())
             result = Message(code=Code.CONTENT, payload=self.encoder.encode_read_instance(path))
-            # import json
-            # d1 = json.loads('{"e":[{"n":"0","sv":"Open Mobile Alliance"},{"n":"1","sv":"Lightweight M2M Client"},{"n":"2","sv":"345000123"},{"n":"3","sv":"1.0"},{"n":"6/0","v":1},{"n":"6/1","v":5},{"n":"7/0","v":3800},{"n":"7/1","v":5000},{"n":"8/0","v":125},{"n":"8/1","v":900},{"n":"9","v":100},{"n":"10","v":15},{"n":"11/0","v":0},{"n":"13","v":1367491215},{"n":"14","sv":"+02:00"},{"n":"15","sv":"U"}]}')
-            # d2 = sorted(self.encoder.encode_read_instance(path)["e"], key=lambda x: x["n"])
-            # import pprint
-            # pp = pprint.PrettyPrinter()
-            # pp.pprint(d1)
-            # pp.pprint(d2)
             result.opt.content_format = MediaType.JSON.value
         elif len(path) == 3:
             result = Message(code=Code.CONTENT, payload=self.encoder.encode_read_resource(path))

@@ -4,3 +4,6 @@
 
 def read_manufacturer():
     return "Lenovo"
+
+def test_method():
+    return 4
