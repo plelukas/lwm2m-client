@@ -33,6 +33,12 @@ class ClientModel:
     def is_resource_readable(self, object_num, resource_num):
         return 'R' in self.definition_dict[object_num]["resourcedefs"][resource_num]["operations"]
 
+    def is_resource_writable(self, object_num, resource_num):
+        return 'W' in self.definition_dict[object_num]["resourcedefs"][resource_num]["operations"]
+
+    def is_resource_executable(self, object_num, resource_num):
+        return 'E' in self.definition_dict[object_num]["resourcedefs"][resource_num]["operations"]
+
     def get_instances_iter_paths(self):
         for obj in self.get_objects():
             for inst in self.get_instances(obj):
@@ -72,6 +78,9 @@ class ClientModel:
         val_or_func = self.data_dict[resource_path[0]][resource_path[1]][resource_path[2]]
         return self.handle_read(val_or_func)
 
-    def handle_instance_read(self, instance_path):
-        for val_or_func in self.data_dict[instance_path[0]][instance_path[1]]:
-            yield self.handle_read(val_or_func)
+    def handle_resource_exec(self, resource_path, params_list):
+        func_name = self.data_dict[resource_path[0]][resource_path[1]][resource_path[2]]
+        if isinstance(func_name, str) and hasattr(handlers, func_name):
+            getattr(handlers, func_name)(params_list)
+            return True
+        return False

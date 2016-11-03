@@ -59,6 +59,11 @@ class RequestsHandler(ObservableResource):
         logger.info("Requested execute at: {} with arguments: {}".format(message_details['path'], message_details['payload']))
         return self.handle_execute(message_details)
 
+    # handle DELETE method (delete)
+    @asyncio.coroutine
+    def render_delete(self, request):
+        return Message(code=Code.METHOD_NOT_ALLOWED)
+
     def get_message_details(self, request):
         return dict(path=request.opt.uri_path, payload=request.payload, format=request.opt.content_format)
 
@@ -77,10 +82,20 @@ class RequestsHandler(ObservableResource):
         pass
 
     def handle_write(self, message_details):
-        pass
+        # accept only json (for now)
+        if message_details['format'] != MediaType.JSON.value:
+            return Message(code=Code.BAD_REQUEST)
 
     def handle_execute(self, message_details):
-        pass
+        if len(message_details['path']) != 3:
+            return Message(code=Code.BAD_REQUEST)
+        params_list = message_details['payload'].decode() or None
+        if params_list:
+            params_list = params_list.split(',')
+        if self.model.handle_resource_exec(message_details['path'], params_list):
+            return Message(code=Code.CHANGED)
+        return Message(code=Code.NOT_FOUND)
+
 
 
 class Client(Site):

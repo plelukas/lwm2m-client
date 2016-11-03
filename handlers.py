@@ -7,3 +7,6 @@ def read_manufacturer():
 
 def test_method():
     return 4
+
+def handle_disable(params_list=None):
+    print('elooooooooooooo')
