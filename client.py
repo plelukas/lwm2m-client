@@ -38,12 +38,19 @@ class RequestsHandler(ObservableResource):
     # handle GET method (either observe or read) (request is a Message object)
     @asyncio.coroutine
     def render_get(self, request):
+        message_details = self.get_message_details(request)
         if request.opt.observe is not None:
-            logger.info("Requested observe at: {}".format(request.opt.uri_path))
-            return self.handle_observe(request.opt.uri_path)
+            if request.opt.observe == 0:
+                logger.info("Requested observe at: {}".format(request.opt.uri_path))
+                return self.handle_observe(message_details['path'], request.token.decode())
+            elif request.opt.observe == 1:
+                logger.info("Requested cancel observation at: {}".format(message_details['path']))
+                return self.handle_cancel_observe(message_details['path'], request.token.decode())
+            else:
+                return Message(code=Code.METHOD_NOT_ALLOWED)
         else:
             logger.info("Requested read at: {}".format(request.opt.uri_path))
-            return self.handle_read(request.opt.uri_path)
+            return self.handle_read(message_details['path'])
 
     # handle PUT method (write)
     @asyncio.coroutine
@@ -78,13 +85,27 @@ class RequestsHandler(ObservableResource):
             result = Message(code=Code.BAD_REQUEST)
         return result
 
-    def handle_observe(self, path):
+    def handle_observe(self, path, token):
+        if len(path) == 2:
+            def _notify():
+                self.updated_state(self.encoder.encode_observe_resource(path))
+        elif len(path) == 3:
+            def _notify():
+                self.updated_state(self.encoder.encode_observe_instance(path))
+        else:
+            return Message(code=Code.BAD_REQUEST)
+
+    def handle_cancel_observe(self, path, token):
         pass
 
     def handle_write(self, message_details):
         # accept only json (for now)
         if message_details['format'] != MediaType.JSON.value:
             return Message(code=Code.BAD_REQUEST)
+
+        if self.encoder.encode_write(message_details['path'], message_details['payload']):
+            return Message(code=Code.CHANGED)
+        return Message(code=Code.NOT_ACCEPTABLE)
 
     def handle_execute(self, message_details):
         if len(message_details['path']) != 3:

@@ -16,6 +16,26 @@ TYPES_MAP = {
 
 
 class JSONEncoder:
+    """
+    if resource has one instance and read is only for that resource the format is:
+        {"e": [
+            {"n": "", "v": <value>}
+        ]}
+    if resource has many instances:
+        if read is from single resource the format is:
+        {"e": [
+            {"n": "<sub_resource>", "v": <value>},
+            {"n": "<sub_resource>", "v": <value>},
+            ...
+        ]}
+
+        if read is from object instance the format is:
+        {"e": [
+            {"n": "<resource>/<sub_resource>", "v": <value>},
+            {"n": "<resource>/<sub_resource>", "v": <value>},
+            ...
+        ]}
+    """
 
     def __init__(self, model):
         self.model = model
@@ -23,37 +43,30 @@ class JSONEncoder:
     def make_response_dict(self):
         return {"e": []}
 
-    def get_resource_dict(self, resource_path, value, sub_resource=None, is_single_resource=False):
+    def get_resource_dict(self, resource_path, value, sub_resource=None, is_single_read=False):
         """
 
         :param resource_path:
         :param value:
         :param sub_resource: used when resource has many instances (ex. power sources)
-        :param is_single_resource:
-            if resource has many instances:
-                if read is from single resource the format is:
-                {"e": [
-                    {"n": "0", "v": <value>},
-                    {"n": "1", "v": <value>},
-                    ...
-                ]}
+        :param is_single_read: used when read is performed only on that resource
 
-                if read is from object instance the format is:
-                {"e": [
-                    {"n": "<resource>/0", "v": <value>},
-                    {"n": "<resource>/1", "v": <value>},
-                    ...
-                ]}
         :return: python dict ready to json dump
         """
         result = {}
-        if sub_resource is None:
-            result["n"] = str(resource_path[2])
+        if is_single_read:
+            result["n"] = ""
         else:
-            if not is_single_resource:
-                result["n"] = str(resource_path[2]) + "/{}".format(sub_resource)
+            if sub_resource is None:
+                if is_single_read:
+                    result["n"] = ""
+                else:
+                    result["n"] = str(resource_path[2])
             else:
-                result["n"] = str(sub_resource)
+                if not is_single_read:
+                    result["n"] = str(resource_path[2]) + "/{}".format(sub_resource)
+                else:
+                    result["n"] = str(sub_resource)
         # simply map types from definition_dict "type" based on TYPES_MAP
         result[TYPES_MAP[self.model.get_definition_resource(resource_path)["type"]]] = value
         return result
@@ -63,10 +76,10 @@ class JSONEncoder:
         result = self.make_response_dict()
         if isinstance(result_value, dict):
             for k, v in result_value.items():
-                resource_dict = self.get_resource_dict(resource_path, v, k, True)
+                resource_dict = self.get_resource_dict(resource_path, v, k, is_single_read=True)
                 result["e"].append(resource_dict)
         else:
-            resource_dict = self.get_resource_dict(resource_path, result_value)
+            resource_dict = self.get_resource_dict(resource_path, result_value, is_single_read=True)
             result["e"].append(resource_dict)
         return dumps(result).encode()
 
@@ -85,5 +98,33 @@ class JSONEncoder:
                 resource_dict = self.get_resource_dict(resource_path, result_value)
                 result["e"].append(resource_dict)
         return dumps(result).encode()
+
+    def _write_resource(self, resource_path, arg_dict):
+        # skip the "n" argument
+        for k, v in arg_dict.items():
+            if k == "n":
+                continue
+            arg = v
+        return self.model.handle_resource_write(resource_path, arg)
+
+    def encode_write(self, path, payload):
+        args_list = loads(payload.decode())['e']
+        if len(args_list) > 1:
+            result = True
+            for arg_dict in args_list:
+                resource = arg_dict['n']
+                resource_path = path + (resource,)
+                result = result and self._write_resource(resource_path, arg_dict)
+            return result
+        else:
+            arg_dict = args_list[0]
+            return self._write_resource(path, arg_dict)
+
+    def encode_observe_resource(self, resource_path):
+        pass
+
+    def encode_observe_instance(self, instance_path):
+        pass
+
 
 

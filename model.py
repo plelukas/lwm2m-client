@@ -84,3 +84,17 @@ class ClientModel:
             getattr(handlers, func_name)(params_list)
             return True
         return False
+
+    def is_function(self, val_or_func):
+        if isinstance(val_or_func, str):
+            if hasattr(handlers, val_or_func):
+                return True
+        return False
+
+    def handle_resource_write(self, resource_path, arg):
+        val_or_func = self.data_dict[resource_path[0]][resource_path[1]][resource_path[2]]
+        if self.is_function(val_or_func):
+            return getattr(handlers, val_or_func)(arg)
+        else:
+            self.data_dict[resource_path[0]][resource_path[1]][resource_path[2]] = arg
+            return True
