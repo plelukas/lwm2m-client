@@ -9,9 +9,6 @@
 def read_manufacturer():
     return "Lenovo"
 
-def test_method():
-    return 4
-
 def handle_disable(params_list=None):
     print('elooooooooooooo')
 
@@ -26,3 +23,4 @@ def handle_timezone(arg=None):
         global _timezone
         _timezone = arg
         return True
+

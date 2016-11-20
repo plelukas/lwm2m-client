@@ -28,7 +28,13 @@ class MediaType(Enum):
     OPAQUE = 1544
 
 
+# BUG: in observe resource multi instance
+
 class RequestsHandler(ObservableResource):
+
+    # dict of: {path: token};   on observe add key to this dict, on cancel remove it
+    observed_objects = dict()
+    observe_interval = 5
 
     def __init__(self, model):
         super().__init__()
@@ -42,10 +48,10 @@ class RequestsHandler(ObservableResource):
         if request.opt.observe is not None:
             if request.opt.observe == 0:
                 logger.info("Requested observe at: {}".format(request.opt.uri_path))
-                return self.handle_observe(message_details['path'], request.token.decode())
+                return self.handle_observe(message_details['path'], request.token)
             elif request.opt.observe == 1:
                 logger.info("Requested cancel observation at: {}".format(message_details['path']))
-                return self.handle_cancel_observe(message_details['path'], request.token.decode())
+                return self.handle_cancel_observe(message_details['path'], request.token)
             else:
                 return Message(code=Code.METHOD_NOT_ALLOWED)
         else:
@@ -85,18 +91,52 @@ class RequestsHandler(ObservableResource):
             result = Message(code=Code.BAD_REQUEST)
         return result
 
+    async def notify_observe(self, path, callback):
+        token = self.observed_objects.get(path)
+        if token is None:
+            return
+
+        await asyncio.sleep(self.observe_interval)
+        callback(token)
+        asyncio.ensure_future(self.notify_observe(path, callback))
+
     def handle_observe(self, path, token):
         if len(path) == 2:
-            def _notify():
-                self.updated_state(self.encoder.encode_observe_resource(path))
+            def _notify(_token):
+                _result = Message(code=Code.CONTENT, payload=self.encoder.encode_read_instance(path), token=_token)
+                _result.opt.content_format = MediaType.JSON.value
+                self.updated_state(_result)
+
+            already_observed = self.observed_objects.get(path)
+            self.observed_objects[path] = token
+            if not already_observed:
+                asyncio.ensure_future(self.notify_observe(path, _notify))
+            result = Message(code=Code.CONTENT, payload=self.encoder.encode_read_instance(path), token=token)
+            result.opt.content_format = MediaType.JSON.value
+            result.opt.observe = 0
+            return result
         elif len(path) == 3:
-            def _notify():
-                self.updated_state(self.encoder.encode_observe_instance(path))
+            def _notify(_token):
+                _result = Message(code=Code.CONTENT, payload=self.encoder.encode_read_resource(path), token=_token)
+                _result.opt.content_format = MediaType.JSON.value
+                self.updated_state(_result)
+
+            already_observed = self.observed_objects.get(path)
+            self.observed_objects[path] = token
+            if not already_observed:
+                asyncio.ensure_future(self.notify_observe(path, _notify))
+            result = Message(code=Code.CONTENT, payload=self.encoder.encode_read_resource(path), token=token)
+            result.opt.content_format = MediaType.JSON.value
+            result.opt.observe = 0
+            return result
         else:
             return Message(code=Code.BAD_REQUEST)
 
     def handle_cancel_observe(self, path, token):
-        pass
+        del self.observed_objects[path]
+        result = Message(code=Code.CONTENT, token=token)
+        result.opt.content_format = MediaType.JSON.value
+        return result
 
     def handle_write(self, message_details):
         # accept only json (for now)

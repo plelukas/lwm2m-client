@@ -120,11 +120,3 @@ class JSONEncoder:
             arg_dict = args_list[0]
             return self._write_resource(path, arg_dict)
 
-    def encode_observe_resource(self, resource_path):
-        pass
-
-    def encode_observe_instance(self, instance_path):
-        pass
-
-
-
