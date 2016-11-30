@@ -54,7 +54,7 @@ class JSONEncoder:
         :return: python dict ready to json dump
         """
         result = {}
-        if is_single_read:
+        if is_single_read and sub_resource is None:
             result["n"] = ""
         else:
             if sub_resource is None:
