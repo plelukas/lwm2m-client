@@ -14,11 +14,11 @@
   },
   "3": {
     "0": {
-      "0": "read_manufacturer",
-      "1": "DA BEST",
+      "0": "RPi",
+      "1": "3",
       "2": "1234567",
       "3": "2.0",
-      "4": "handle_reboot",
+      "4": "execute_buzz",
       "5": "handle_factory_reset",
       "6": {
         "0": 4,
@@ -61,6 +61,13 @@
       "3": "0.01",
       "4": "000000",
       "5": 1448794802
+    }
+  },
+  "10": {
+    "0": {
+      "0": "read_temperature",
+      "1": "read_humidity",
+      "2": "execute_buzz"
     }
   }
 }

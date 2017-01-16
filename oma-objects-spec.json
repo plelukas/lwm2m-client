@@ -1025,5 +1025,47 @@
         "description": ""
       }
     ]
+  },
+  {
+    "name": "Luke_impl",
+    "id": 10,
+    "instancetype": "single",
+    "mandatory": false,
+    "description": "",
+    "resourcedefs": [
+      {
+        "id": 0,
+        "name": "Temperature",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "st. C",
+        "description": ""
+      },
+      {
+        "id": 1,
+        "name": "Relative Humidity",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "%",
+        "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Buzzer",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
+      }
+    ]
   }
 ]

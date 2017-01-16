@@ -4,6 +4,8 @@
 import asyncio
 import logging
 
+import RPi.GPIO as GPIO
+
 from enum import Enum
 
 import aiocoap
@@ -164,7 +166,7 @@ class Client(Site):
     location = None
     timewait = 27
 
-    def __init__(self, model=ClientModel(), server_name="127.0.0.1", server_port=5683):
+    def __init__(self, model=ClientModel(), server_name="10.42.0.1", server_port=5683):
         super().__init__()
         self.model = model
         self.server_name = server_name
@@ -249,6 +251,7 @@ if __name__ == '__main__':
     except KeyboardInterrupt:
         asyncio.wait_for(client.deregister(), 2000)
         loop.close()
+        GPIO.cleanup()
         exit(0)
 
 
