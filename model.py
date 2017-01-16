@@ -60,6 +60,9 @@ class ClientModel:
         return result[:-1]
 
     def get_definition_resource(self, resource_path):
+        for _dict in self.definition_dict:
+            if _dict['id'] == int(resource_path[0]):
+                return _dict["resourcedefs"][int(resource_path[2])]
         return self.definition_dict[int(resource_path[0])]["resourcedefs"][int(resource_path[2])]
 
     def handle_read(self, val_or_func):
