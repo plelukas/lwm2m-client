@@ -164,7 +164,7 @@ class Client(Site):
     location = None
     timewait = 27
 
-    def __init__(self, model=ClientModel(), server_name="127.0.0.1", server_port=5683):
+    def __init__(self, model=ClientModel(), server_name="192.168.1.94", server_port=5683):
         super().__init__()
         self.model = model
         self.server_name = server_name

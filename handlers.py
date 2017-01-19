@@ -4,6 +4,7 @@
 # when resource is both readable and writable
 # then specify optional argument for a method to distinguish between reads and writes
 # writable handler MUST return True or False in order to tell if it completed successfully or not
+from devices.thermometer import Thermometer
 
 
 def read_manufacturer():
@@ -23,4 +24,9 @@ def handle_timezone(arg=None):
         global _timezone
         _timezone = arg
         return True
+
+thermometer = Thermometer()
+
+def read_temperature():
+    return thermometer.read_temp()
 
