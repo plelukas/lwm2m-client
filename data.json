@@ -67,7 +67,8 @@
     "0": {
       "0": "read_temperature",
       "1": "read_humidity",
-      "2": "execute_buzz"
+      "2": "execute_buzz",
+      "3": "read_gas"
     }
   }
 }

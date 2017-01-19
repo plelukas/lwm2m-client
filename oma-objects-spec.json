@@ -1065,6 +1065,17 @@
         "range": "",
         "units": "",
         "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Alcohol",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "boolean",
+        "range": "",
+        "units": "",
+        "description": ""
       }
     ]
   }

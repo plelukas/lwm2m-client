@@ -15,6 +15,18 @@ GasPin = 26  # pin37 physical
 
 GPIO.setmode(GPIO.BCM)
 
+def gas_setup():
+    GPIO.setup(GasPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+
+gas_setup()
+def read_gas():
+    is_on = False
+    for i in range(10):
+        if not GPIO.input(GasPin):
+            is_on = True
+        time.sleep(0.1)
+    return is_on
+
 def buzzer_setup():
     GPIO.setup(BuzzerPin, GPIO.OUT)
     GPIO.output(BuzzerPin, GPIO.LOW)

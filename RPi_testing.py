@@ -29,7 +29,6 @@ def beep(x):
         time.sleep(0.01)
 
 
-
 def gas_setup():
     GPIO.setup(GasPin, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
 
