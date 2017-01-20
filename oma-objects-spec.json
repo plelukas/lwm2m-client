@@ -675,7 +675,19 @@
         "range": "",
         "units": "",
         "description": ""
+      },
+      {
+        "id": 2,
+        "name": "Buzzer",
+        "operations": "E",
+        "instancetype": "single",
+        "mandatory": false,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
       }
+
     ]
   }
 ]
