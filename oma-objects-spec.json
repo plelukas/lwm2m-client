@@ -686,8 +686,18 @@
         "range": "",
         "units": "",
         "description": ""
+      },
+      {
+        "id": 3,
+        "name": "Pressure",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
       }
-
     ]
   }
 ]
