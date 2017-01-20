@@ -697,6 +697,17 @@
         "range": "",
         "units": "",
         "description": ""
+      },
+      {
+        "id": 4,
+        "name": "Gas",
+        "operations": "R",
+        "instancetype": "single",
+        "mandatory": true,
+        "type": "string",
+        "range": "",
+        "units": "",
+        "description": ""
       }
     ]
   }

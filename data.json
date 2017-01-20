@@ -68,7 +68,8 @@
       "0": "read_temperature",
       "1": "read_light",
       "2": "beep_buzzer",
-      "3": "read_pressure"
+      "3": "read_pressure",
+      "4": "read_gas"
     }
   }
 }
