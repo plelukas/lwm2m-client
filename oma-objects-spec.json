@@ -648,7 +648,7 @@
     ]
   },
   {
-    "name": "Loc",
+    "name": "RPI3",
     "id": 7,
     "instancetype": "single",
     "mandatory": false,

@@ -156,7 +156,7 @@ class RequestsHandler(ObservableResource):
 
 class Client(Site):
 
-    endpoint_name = "My_lwm2m_client"  # endpoint client name
+    endpoint_name = "Raspberry Pi 3"  # endpoint client name
     lifetime = 86400  # default
     binding = "UQ"  # binding mode
     model = None # model for objects and object instances
