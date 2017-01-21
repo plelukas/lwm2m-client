@@ -39,10 +39,19 @@ def handle_timezone(arg=None):
         return True
 
 
+def cut_decimal_places(func):
+    def func_wrapper():
+        return "{0:.2f}".format(func())
+
+    return func_wrapper
+
+
+@cut_decimal_places
 def read_temperature():
     return thermometer.read_temp()
 
 
+@cut_decimal_places
 def read_light():
     return lightSensor.read()
 
@@ -51,9 +60,11 @@ def beep_buzzer(args):
     buzzer.beep()
 
 
+@cut_decimal_places
 def read_pressure():
     return pressureSensor.read()
 
 
+@cut_decimal_places
 def read_gas():
     return gasSensor.read()
