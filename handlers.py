@@ -57,7 +57,10 @@ def read_light():
 
 
 def beep_buzzer(args):
-    buzzer.beep()
+    if args is not None:
+        buzzer.beep(float(args[0]))
+    else:
+        buzzer.beep()
 
 
 @cut_decimal_places

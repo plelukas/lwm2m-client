@@ -11,7 +11,7 @@ class Buzzer(object):
     def __init__(self, pin: int):
         self.sensor = Buzz(pin)
 
-    def beep(self):
+    def beep(self, time=0.25):
         if not self.sensor.is_active:
-            threading.Timer(0.25, self.sensor.off).start()
+            threading.Timer(time, self.sensor.off).start()
             self.sensor.on()
